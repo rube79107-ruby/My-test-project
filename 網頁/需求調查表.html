@@ -1,0 +1,400 @@
+<title>Feiyen 客製需求表</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+/* Layout: one narrow column like a paper order slip; each section is a "page" of the slip, only the relevant ones appear */
+:root{
+  --bg:#f6efe7;        /* milk tea paper */
+  --paper:#fffaf5;
+  --ink:#3b2a22;       /* cocoa */
+  --muted:#7d6a5e;
+  --line:#e6d7c9;
+  --accent:#c9566b;    /* rosy red from the spring price cards */
+  --accent-soft:#f7dfe2;
+  --ok:#3f7d5a;
+  --error:#b3261e;
+  --display:"LXGW WenKai TC","Kaiti TC","STKaiti","Noto Sans TC",serif;
+  --body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#231a16;--paper:#2e2420;--ink:#f3e7dc;--muted:#bba899;--line:#4a3b33;
+  --accent:#ec8a9b;--accent-soft:#4a2a31;--ok:#7fc49b;--error:#ff8a80;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#231a16;--paper:#2e2420;--ink:#f3e7dc;--muted:#bba899;--line:#4a3b33;
+  --accent:#ec8a9b;--accent-soft:#4a2a31;--ok:#7fc49b;--error:#ff8a80;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.7;padding-inline:16px;padding-block:24px 64px}
+.wrap{max-width:640px;margin:0 auto;display:grid;gap:20px}
+header{display:grid;gap:6px;padding-block:8px}
+.brand{font-family:var(--display);font-size:15px;letter-spacing:.12em;color:var(--accent)}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(28px,7vw,38px);line-height:1.25;margin:0;text-wrap:balance}
+.lead{color:var(--muted);margin:0}
+.notice{background:var(--accent-soft);border-radius:10px;padding:12px 14px;font-size:14px}
+section{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:20px 18px;display:grid;gap:18px}
+section h2{font-family:var(--display);font-size:22px;margin:0;display:flex;gap:10px;align-items:baseline}
+section h2 .tag{font-family:var(--body);font-size:12px;letter-spacing:.08em;color:var(--muted);font-weight:500}
+.desc{white-space:pre-line;font-size:14px;color:var(--muted);background:var(--bg);border-radius:10px;padding:10px 12px;margin:0}
+.q{display:grid;gap:8px;border:0;margin:0;padding:0;min-width:0}
+.q > label:first-child,.q legend{font-weight:700;font-size:15px;padding:0}
+.req::after{content:" *";color:var(--accent)}
+.hint{font-size:13px;color:var(--muted);margin:0}
+input[type=text],input[type=tel],input[type=number],textarea,select{
+  width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+textarea{min-height:84px;resize:vertical}
+input:focus-visible,textarea:focus-visible,select:focus-visible,button:focus-visible,.opt input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px}
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.opt{position:relative}
+.opt input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.opt span{display:inline-block;border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:6px 14px;font-size:15px;cursor:pointer;user-select:none}
+.opt input:checked+span{background:var(--accent);border-color:var(--accent);color:var(--paper)}
+.styles .opt span{min-width:44px;text-align:center;padding:6px 10px}
+.err{color:var(--error);font-size:13px;margin:0}
+.q.invalid input[type=text],.q.invalid input[type=tel],.q.invalid input[type=number],.q.invalid select{border-color:var(--error)}
+.actions{display:grid;gap:10px}
+button{font:inherit;font-weight:700;border:0;border-radius:12px;padding:14px 18px;cursor:pointer}
+.primary{background:var(--accent);color:var(--paper);font-size:17px}
+.ghost{background:transparent;color:var(--muted);border:1px solid var(--line)}
+#result pre{white-space:pre-wrap;word-break:break-word;background:var(--bg);border:1px dashed var(--line);border-radius:10px;padding:14px;margin:0;font-family:var(--body);font-size:14px;max-height:420px;overflow:auto}
+.steps{margin:0;padding-left:1.3em;display:grid;gap:4px}
+.ig{font-weight:700;color:var(--accent);user-select:all}
+a{color:var(--accent)}
+.copied{color:var(--ok);font-size:14px;margin:0;min-height:1.4em}
+footer{text-align:center;color:var(--muted);font-size:13px}
+@media (prefers-reduced-motion:no-preference){section{transition:opacity .2s}}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="brand">FEIYEN 手繪 ・ @fei.ru.yen</div>
+  <h1>客製需求調查表</h1>
+  <p class="lead">先讓我了解你想做的內容，填完後把整理好的需求貼到 IG 私訊給我，我會在 3 天內回覆並報價。</p>
+  <p class="notice">這份是「需求調查」，填完不代表下單成功。確認報價並全額匯款後才會排單喔！</p>
+</header>
+
+<form id="form" novalidate>
+
+<section id="s1">
+  <h2>基本資料</h2>
+  <div class="q" data-req><label class="req" for="name">怎麼稱呼你？</label><input type="text" id="name" autocomplete="name"></div>
+  <div class="q" data-req><label class="req" for="ig">你的 IG 帳號</label><input type="text" id="ig" placeholder="@your_ig"><p class="hint">我會用 IG 私訊聯絡你</p></div>
+  <fieldset class="q" data-req data-group="contact"><legend class="req">偏好的聯絡方式</legend>
+    <div class="opts">
+      <label class="opt"><input type="radio" name="contact" id="contact-ig" value="IG 私訊"><span>IG 私訊</span></label>
+      <label class="opt"><input type="radio" name="contact" id="contact-line" value="LINE"><span>LINE</span></label>
+      <label class="opt"><input type="radio" name="contact" id="contact-email" value="Email"><span>Email</span></label>
+    </div></fieldset>
+  <div class="q" id="q-lineEmail" hidden><label for="lineEmail">LINE ID 或 Email</label><input type="text" id="lineEmail"></div>
+</section>
+
+<section id="s2">
+  <h2>想做的商品</h2>
+  <fieldset class="q" data-req data-group="main"><legend class="req">這次主要想做哪一種商品？</legend>
+    <div class="opts">
+      <label class="opt"><input type="radio" name="main" id="main-face" value="無臉畫圖檔"><span>無臉畫圖檔</span></label>
+      <label class="opt"><input type="radio" name="main" id="main-frame" value="無框畫"><span>無框畫</span></label>
+      <label class="opt"><input type="radio" name="main" id="main-key" value="鑰匙圈"><span>鑰匙圈</span></label>
+      <label class="opt"><input type="radio" name="main" id="main-bday" value="生日商品"><span>生日立牌／插旗</span></label>
+      <label class="opt"><input type="radio" name="main" id="main-spring" value="紅包袋／春聯"><span>紅包袋／春聯</span></label>
+      <label class="opt"><input type="radio" name="main" id="main-wall" value="手機桌布"><span>手機桌布</span></label>
+      <label class="opt"><input type="radio" name="main" id="main-chat" value="還不確定，想先聊聊"><span>還不確定，想先聊聊</span></label>
+    </div></fieldset>
+</section>
+
+<section id="s3A" data-for="無臉畫圖檔" hidden>
+  <h2>無臉畫圖檔 <span class="tag">350 元起／1 位</span></h2>
+  <fieldset class="q" data-req data-group="faceUse"><legend class="req">圖檔的用途</legend>
+    <div class="opts">
+      <label class="opt"><input type="checkbox" name="faceUse" id="use-wall" value="手機桌布"><span>手機桌布</span></label>
+      <label class="opt"><input type="checkbox" name="faceUse" id="use-avatar" value="社群大頭貼"><span>社群大頭貼</span></label>
+      <label class="opt"><input type="checkbox" name="faceUse" id="use-gift" value="送禮"><span>送禮</span></label>
+      <label class="opt"><input type="checkbox" name="faceUse" id="use-print" value="印成實體商品"><span>印成實體商品</span></label>
+      <label class="opt"><input type="checkbox" name="faceUse" id="use-event" value="婚禮或活動"><span>婚禮或活動</span></label>
+      <label class="opt"><input type="checkbox" name="faceUse" id="use-other" value="其他"><span>其他</span></label>
+    </div></fieldset>
+  <fieldset class="q" data-group="faceRatio"><legend>需要的尺寸或比例</legend>
+    <div class="opts">
+      <label class="opt"><input type="radio" name="faceRatio" id="ratio-11" value="正方形 1:1"><span>正方形 1:1</span></label>
+      <label class="opt"><input type="radio" name="faceRatio" id="ratio-34" value="直式 3:4"><span>直式 3:4</span></label>
+      <label class="opt"><input type="radio" name="faceRatio" id="ratio-916" value="手機 9:16"><span>手機 9:16</span></label>
+      <label class="opt"><input type="radio" name="faceRatio" id="ratio-wide" value="橫式"><span>橫式</span></label>
+      <label class="opt"><input type="radio" name="faceRatio" id="ratio-help" value="請幫我建議"><span>請幫我建議</span></label>
+    </div></fieldset>
+  <fieldset class="q" data-req data-group="faceUsage"><legend class="req">是否會用於商業販售？</legend>
+    <div class="opts">
+      <label class="opt"><input type="radio" name="faceUsage" id="usage-personal" value="個人使用"><span>個人使用</span></label>
+      <label class="opt"><input type="radio" name="faceUsage" id="usage-biz" value="商業使用"><span>商業使用</span></label>
+    </div><p class="hint">商業使用（例如印成商品販售）另有授權費</p></fieldset>
+  <fieldset class="q" data-group="faceAddon"><legend>想額外加購嗎？</legend>
+    <div class="opts">
+      <label class="opt"><input type="checkbox" name="faceAddon" id="addon-frame" value="無框畫 20×20 cm（$699）"><span>無框畫 20×20 cm・$699</span></label>
+      <label class="opt"><input type="checkbox" name="faceAddon" id="addon-key" value="鑰匙圈 5×5 cm（$450）"><span>鑰匙圈 5×5 cm・$450</span></label>
+    </div><p class="hint">加購商品會用同一張無臉畫製作</p></fieldset>
+</section>
+
+<section id="s3B" data-for="無框畫" hidden>
+  <h2>無框畫 <span class="tag">20 × 20 cm・699 元</span></h2>
+  <p class="desc">無框畫為加購商品，尺寸 20 × 20 cm。</p>
+  <fieldset class="q" data-group="frameFile"><legend>是否也需要電子圖檔？</legend>
+    <div class="opts">
+      <label class="opt"><input type="radio" name="frameFile" id="frame-file-yes" value="需要"><span>需要</span></label>
+      <label class="opt"><input type="radio" name="frameFile" id="frame-file-no" value="不需要"><span>不需要</span></label>
+    </div></fieldset>
+</section>
+
+<section id="s3C" data-for="鑰匙圈" hidden>
+  <h2>鑰匙圈 <span class="tag">5 × 5 cm 皮革・450 元</span></h2>
+  <div class="q" data-req><label class="req" for="keyQty">預計數量</label><input type="number" id="keyQty" min="1" inputmode="numeric"><p class="hint">數量較多可另外討論優惠</p></div>
+  <fieldset class="q" data-group="keySide"><legend>單面或雙面</legend>
+    <div class="opts">
+      <label class="opt"><input type="radio" name="keySide" id="key-single" value="單面"><span>單面</span></label>
+      <label class="opt"><input type="radio" name="keySide" id="key-double" value="雙面"><span>雙面</span></label>
+      <label class="opt"><input type="radio" name="keySide" id="key-unsure" value="不確定"><span>不確定</span></label>
+    </div></fieldset>
+</section>
+
+<section id="s3D" data-for="生日商品" hidden>
+  <h2>生日立牌／插旗</h2>
+  <p class="desc">🎂 生日商品請在生日或活動前 30 天下單
+・生日立牌：60 × 60 cm，1,000 元（宅配）
+・生日蛋糕插旗：1 支 90 元，訂單滿 200 元才出貨（3 支起）
+・點心插旗：一組 12 支 200 元</p>
+  <fieldset class="q" data-req data-group="bdayType"><legend class="req">要做哪一種？</legend>
+    <div class="opts">
+      <label class="opt"><input type="checkbox" name="bdayType" id="bday-stand" value="生日立牌"><span>生日立牌</span></label>
+      <label class="opt"><input type="checkbox" name="bdayType" id="bday-cake" value="生日蛋糕插旗"><span>生日蛋糕插旗</span></label>
+      <label class="opt"><input type="checkbox" name="bdayType" id="bday-snack" value="點心插旗"><span>點心插旗</span></label>
+    </div></fieldset>
+  <div class="q" data-req><label class="req" for="bdayName">壽星的名字（放在畫面上的寫法）</label><input type="text" id="bdayName"></div>
+  <div class="q"><label for="bdayAge">幾歲生日？</label><input type="text" id="bdayAge"></div>
+  <fieldset class="q styles" id="q-stand" data-group="standStyle" hidden><legend class="req">生日立牌款式</legend><div class="opts" data-letters="ABCD" data-name="standStyle"></div></fieldset>
+  <fieldset class="q styles" id="q-cake" data-group="cakeStyle" hidden><legend class="req">生日蛋糕插旗款式（共 17 款）</legend><div class="opts" data-letters="ABCDEFGHIJKLMNOPQ" data-name="cakeStyle"></div></fieldset>
+  <div class="q" id="q-cakeQty" hidden><label class="req" for="cakeQty">生日蛋糕插旗支數</label><input type="number" id="cakeQty" min="3" inputmode="numeric"><p class="hint">3 支起（滿 200 元出貨）</p></div>
+  <fieldset class="q styles" id="q-snack" data-group="snackStyle" hidden><legend class="req">點心插旗生日帽款式（共 6 款）</legend><div class="opts" data-letters="ABCDEF" data-name="snackStyle"></div></fieldset>
+  <div class="q" id="q-snackQty" hidden><label class="req" for="snackQty">點心插旗組數</label><input type="number" id="snackQty" min="1" inputmode="numeric"><p class="hint">一組 12 支</p></div>
+</section>
+
+<section id="s3E" data-for="紅包袋／春聯" hidden>
+  <h2>紅包袋／春聯</h2>
+  <p class="desc">🧧 2027 羊年春節商品 12/31 截單，建議提早預約
+・紅包袋：1 款 3 個 180 元
+・春聯：1 款 2 張 150 元
+・基本款每張畫面 1 位人物，加 1 位人物或寵物 +20 元，最多 4 位
+・同款加印一張 +40 元</p>
+  <div class="q" data-req><label class="req" for="redQty">紅包袋訂購數量</label>
+    <select id="redQty"><option value="">請選擇</option><option>不需要</option><option>1 款</option><option>2 款</option><option>3 款</option><option>4 款</option><option>5 款</option></select></div>
+  <div class="q" data-req><label class="req" for="coupletQty">春聯訂購數量</label>
+    <select id="coupletQty"><option value="">請選擇</option><option>不需要</option><option>1 款</option><option>2 款</option><option>3 款</option><option>4 款</option><option>5 款</option></select></div>
+  <fieldset class="q" data-req data-group="springPeople"><legend class="req">每張畫面要放幾位？（人物＋寵物）</legend>
+    <div class="opts">
+      <label class="opt"><input type="radio" name="springPeople" id="sp-1" value="1 位（基本款）"><span>1 位・基本款</span></label>
+      <label class="opt"><input type="radio" name="springPeople" id="sp-2" value="2 位（+$20）"><span>2 位・+$20</span></label>
+      <label class="opt"><input type="radio" name="springPeople" id="sp-3" value="3 位（+$40）"><span>3 位・+$40</span></label>
+      <label class="opt"><input type="radio" name="springPeople" id="sp-4" value="4 位（+$60）"><span>4 位・+$60</span></label>
+    </div></fieldset>
+  <div class="q"><label for="springText">想放的吉祥話或文字</label><textarea id="springText" placeholder="例如：大吉大利、平安喜樂、全家人名字"></textarea></div>
+</section>
+
+<section id="s3F" data-for="手機桌布" hidden>
+  <h2>手機桌布 <span class="tag">一組 250 元</span></h2>
+  <p class="desc">📱 一組包含鎖屏＋桌布，共 2 張
+・尺寸：1290 × 2796 px，300 dpi
+・電子檔交付，不用寄送
+・定期推出新款式，請參考 IG 最新公告</p>
+  <div class="q" data-req><label class="req" for="wallStyle">想要的款式</label><input type="text" id="wallStyle" placeholder="填 IG 公告的款式代號，可填多款"><p class="hint">每款一組 250 元</p></div>
+</section>
+
+<section id="s4" hidden>
+  <h2>取貨與收件人資訊</h2>
+  <p class="desc">運費由買方支付：超商店到店 60 元。生日立牌為宅配（80 元），我會再和你確認地址。</p>
+  <fieldset class="q" data-req data-group="pickup"><legend class="req">取貨方式</legend>
+    <div class="opts">
+      <label class="opt"><input type="radio" name="pickup" id="pickup-711" value="7-11 店到店"><span>7-11 店到店</span></label>
+      <label class="opt"><input type="radio" name="pickup" id="pickup-fm" value="全家店到店"><span>全家店到店</span></label>
+    </div></fieldset>
+  <div class="q" data-req><label class="req" for="rcvName">收件人姓名</label><input type="text" id="rcvName" autocomplete="name"><p class="hint">請填真實姓名，取貨時需核對</p></div>
+  <div class="q" data-req data-phone><label class="req" for="rcvPhone">收件人手機</label><input type="tel" id="rcvPhone" inputmode="numeric" placeholder="09xxxxxxxx" autocomplete="tel"><p class="hint">取貨通知簡訊會傳到這支手機</p></div>
+  <div class="q" data-req><label class="req" for="rcvStore">取貨門市</label><input type="text" id="rcvStore" placeholder="例如：7-11 ○○門市（店號 123456）"></div>
+</section>
+
+<section id="s5">
+  <h2>參考照片</h2>
+  <p class="desc">📸 參考照片小提醒
+・臉部清楚、光線充足，不要有濾鏡或太遠
+・全身照最好，至少要有上半身
+・每位人物或寵物都需要照片，可以分開拍
+・照片只用於這次繪製，不會公開或作其他用途</p>
+  <fieldset class="q" data-req data-group="photo"><legend class="req">參考照片怎麼提供？</legend>
+    <div class="opts">
+      <label class="opt"><input type="radio" name="photo" id="photo-ig" value="填完後用 IG 私訊傳"><span>填完後用 IG 私訊傳</span></label>
+      <label class="opt"><input type="radio" name="photo" id="photo-line" value="用 LINE 傳"><span>用 LINE 傳</span></label>
+      <label class="opt"><input type="radio" name="photo" id="photo-later" value="還沒準備好"><span>還沒準備好</span></label>
+    </div></fieldset>
+</section>
+
+<section id="s6">
+  <h2>確認事項</h2>
+  <fieldset class="q" data-req data-group="agree" data-all><legend class="req">我已了解</legend>
+    <div class="opts">
+      <label class="opt"><input type="checkbox" name="agree" id="agree-1" value="填表不代表下單成功，全額匯款後才排單"><span>填表不代表下單成功，全額匯款後才排單</span></label>
+      <label class="opt"><input type="checkbox" name="agree" id="agree-2" value="已閱讀 IG 精選「貼心提醒」"><span>已閱讀 IG 精選「貼心提醒」</span></label>
+    </div></fieldset>
+  <fieldset class="q" data-req data-group="share"><legend class="req">完成的作品可以分享在 IG 嗎？</legend>
+    <div class="opts">
+      <label class="opt"><input type="radio" name="share" id="share-yes" value="可以"><span>可以</span></label>
+      <label class="opt"><input type="radio" name="share" id="share-mask" value="可以，但請遮住臉或名字"><span>可以，但遮住臉或名字</span></label>
+      <label class="opt"><input type="radio" name="share" id="share-no" value="不可以"><span>不可以</span></label>
+    </div></fieldset>
+  <fieldset class="q" data-group="source"><legend>你是怎麼知道 Feiyen 手繪的？</legend>
+    <div class="opts">
+      <label class="opt"><input type="radio" name="source" id="src-explore" value="IG 探索"><span>IG 探索</span></label>
+      <label class="opt"><input type="radio" name="source" id="src-friend" value="朋友推薦"><span>朋友推薦</span></label>
+      <label class="opt"><input type="radio" name="source" id="src-work" value="看到朋友的作品"><span>看到朋友的作品</span></label>
+      <label class="opt"><input type="radio" name="source" id="src-back" value="回頭客"><span>回頭客</span></label>
+      <label class="opt"><input type="radio" name="source" id="src-other" value="其他"><span>其他</span></label>
+    </div></fieldset>
+  <div class="q"><label for="note">其他想說的話</label><textarea id="note"></textarea></div>
+</section>
+
+<div class="actions">
+  <p class="err" id="formErr" hidden>還有必填的題目沒填，請看標示紅字的地方。</p>
+  <button type="submit" class="primary">整理我的需求</button>
+</div>
+</form>
+
+<section id="result" hidden>
+  <h2>需求整理好了！</h2>
+  <ol class="steps">
+    <li>按「複製需求」</li>
+    <li>打開 IG，私訊 <span class="ig">@fei.ru.yen</span>（<a href="https://ig.me/m/fei.ru.yen" target="_blank" rel="noopener">開啟私訊</a>）</li>
+    <li>貼上需求，有照片的話一起傳</li>
+  </ol>
+  <pre id="summary"></pre>
+  <div class="actions">
+    <button type="button" class="primary" id="copyBtn">複製需求</button>
+    <p class="copied" id="copied" aria-live="polite"></p>
+    <button type="button" class="ghost" id="editBtn">回去修改</button>
+  </div>
+</section>
+
+<footer>Feiyen 手繪 ・ IG @fei.ru.yen ・ 回覆時間約 3 天</footer>
+</div>
+
+<script>
+(function(){
+  const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+  const form=$('#form');
+  const KEY='feiyen-form-draft';
+
+  // build style chips
+  $$('[data-letters]').forEach(box=>{
+    const name=box.dataset.name;
+    [...box.dataset.letters].forEach(l=>{
+      const lab=document.createElement('label');lab.className='opt';
+      lab.innerHTML=`<input type="radio" name="${name}" id="${name}-${l}" value="${l} 款"><span>${l}</span>`;
+      box.appendChild(lab);
+    });
+  });
+
+  const val=n=>{const el=form.querySelector(`input[name="${n}"]:checked`);return el?el.value:''};
+  const vals=n=>$$(`input[name="${n}"]:checked`).map(e=>e.value);
+  const v=id=>($('#'+id).value||'').trim();
+
+  const PHYSICAL=['無框畫','鑰匙圈','生日商品','紅包袋／春聯'];
+  function needsShipping(){
+    const m=val('main');
+    if(PHYSICAL.includes(m)){
+      if(m==='紅包袋／春聯') return !(v('redQty')==='不需要'&&v('coupletQty')==='不需要');
+      return true;
+    }
+    return m==='無臉畫圖檔'&&vals('faceAddon').length>0;
+  }
+
+  function update(){
+    const m=val('main');
+    $$('section[data-for]').forEach(s=>s.hidden=s.dataset.for!==m);
+    $('#q-lineEmail').hidden=!['LINE','Email'].includes(val('contact'));
+    const t=vals('bdayType');
+    $('#q-stand').hidden=!t.includes('生日立牌');
+    $('#q-cake').hidden=$('#q-cakeQty').hidden=!t.includes('生日蛋糕插旗');
+    $('#q-snack').hidden=$('#q-snackQty').hidden=!t.includes('點心插旗');
+    $('#s4').hidden=!needsShipping();
+  }
+
+  const visible=el=>!el.closest('[hidden]');
+  function validate(){
+    let ok=true;
+    $$('.q').forEach(q=>{
+      q.classList.remove('invalid');
+      const old=q.querySelector('.err');if(old)old.remove();
+      if(!visible(q))return;
+      const required=q.hasAttribute('data-req')||(q.classList.contains('styles'))||(q.id==='q-cakeQty'||q.id==='q-snackQty');
+      if(!required)return;
+      let msg='';
+      if(q.dataset.group){
+        const n=q.dataset.group, picked=vals(n).length;
+        const total=$$(`input[name="${n}"]`).length;
+        if(q.hasAttribute('data-all')?picked<total:picked===0) msg=q.hasAttribute('data-all')?'請勾選全部項目':'請選擇一項';
+      }else{
+        const inp=q.querySelector('input,select,textarea');
+        const x=(inp.value||'').trim();
+        if(!x) msg='這題必填';
+        else if(q.hasAttribute('data-phone')&&!/^09\d{8}$/.test(x.replace(/[\s-]/g,''))) msg='請填 09 開頭的 10 碼手機號碼';
+        else if(inp.id==='cakeQty'&&+x<3) msg='生日蛋糕插旗 3 支起';
+        else if(inp.type==='number'&&+x<1) msg='請填 1 以上的數字';
+      }
+      if(msg){ok=false;q.classList.add('invalid');const p=document.createElement('p');p.className='err';p.textContent=msg;q.appendChild(p);}
+    });
+    if(val('main')==='紅包袋／春聯'&&v('redQty')==='不需要'&&v('coupletQty')==='不需要'){
+      ok=false;const q=$('#coupletQty').closest('.q');q.classList.add('invalid');
+      const p=document.createElement('p');p.className='err';p.textContent='紅包袋和春聯至少要選一種';q.appendChild(p);
+    }
+    return ok;
+  }
+
+  function summary(){
+    const L=[];const add=(k,x)=>{if(x&&(!Array.isArray(x)||x.length))L.push(`${k}：${Array.isArray(x)?x.join('、'):x}`)};
+    L.push('【Feiyen 手繪｜客製需求】');
+    add('稱呼',v('name'));add('IG',v('ig'));add('聯絡方式',val('contact'));
+    if(!$('#q-lineEmail').hidden)add('LINE／Email',v('lineEmail'));
+    L.push('');add('主要商品',val('main'));
+    const m=val('main');
+    if(m==='無臉畫圖檔'){add('用途',vals('faceUse'));add('尺寸比例',val('faceRatio'));add('使用方式',val('faceUsage'));add('加購',vals('faceAddon'));}
+    if(m==='無框畫'){add('尺寸','20 × 20 cm');add('電子圖檔',val('frameFile'));}
+    if(m==='鑰匙圈'){add('數量',v('keyQty'));add('單雙面',val('keySide'));}
+    if(m==='生日商品'){add('品項',vals('bdayType'));add('壽星名字',v('bdayName'));add('幾歲',v('bdayAge'));
+      if(!$('#q-stand').hidden)add('生日立牌款式',val('standStyle'));
+      if(!$('#q-cake').hidden){add('生日蛋糕插旗款式',val('cakeStyle'));add('生日蛋糕插旗支數',v('cakeQty'));}
+      if(!$('#q-snack').hidden){add('點心插旗生日帽款式',val('snackStyle'));add('點心插旗組數',v('snackQty'));}}
+    if(m==='紅包袋／春聯'){add('紅包袋',v('redQty'));add('春聯',v('coupletQty'));add('每張畫面',val('springPeople'));add('吉祥話／文字',v('springText'));}
+    if(m==='手機桌布'){add('款式',v('wallStyle'));}
+    if(!$('#s4').hidden){L.push('');add('取貨方式',val('pickup'));add('收件人',v('rcvName'));add('手機',v('rcvPhone'));add('取貨門市',v('rcvStore'));}
+    L.push('');add('參考照片',val('photo'));add('作品分享',val('share'));add('從哪裡知道我',val('source'));add('其他',v('note'));
+    return L.join('\n');
+  }
+
+  // draft (per-viewer convenience)
+  function save(){try{const d={};form.querySelectorAll('input,select,textarea').forEach(el=>{
+    if(el.type==='radio'||el.type==='checkbox'){if(el.checked)d[el.id]=true}else if(el.value)d[el.id]=el.value});
+    localStorage.setItem(KEY,JSON.stringify(d))}catch(e){}}
+  function load(){try{const d=JSON.parse(localStorage.getItem(KEY)||'{}');Object.entries(d).forEach(([id,x])=>{
+    const el=document.getElementById(id);if(!el)return;if(x===true)el.checked=true;else el.value=x})}catch(e){}}
+
+  form.addEventListener('input',()=>{update();save()});
+  form.addEventListener('change',()=>{update();save()});
+  form.addEventListener('submit',e=>{
+    e.preventDefault();update();
+    const ok=validate();$('#formErr').hidden=ok;
+    if(!ok){const first=$('.q.invalid');if(first)first.scrollIntoView({behavior:'smooth',block:'center'});return}
+    $('#summary').textContent=summary();$('#copied').textContent='';
+    form.hidden=true;$('#result').hidden=false;$('#result').scrollIntoView({block:'start'});
+  });
+  $('#editBtn').addEventListener('click',()=>{$('#result').hidden=true;form.hidden=false;});
+  $('#copyBtn').addEventListener('click',()=>{
+    const text=$('#summary').textContent;
+    const fallback=()=>{const r=document.createRange();r.selectNodeContents($('#summary'));const s=getSelection();s.removeAllRanges();s.addRange(r);
+      $('#copied').textContent='已選取文字，請長按或按 ⌘C 複製';};
+    try{navigator.clipboard.writeText(text).then(()=>{$('#copied').textContent='✓ 已複製，貼到 IG 私訊就可以了';},fallback)}catch(e){fallback()}
+  });
+
+  load();update();
+})();
+</script>
