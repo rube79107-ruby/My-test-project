@@ -58,6 +58,10 @@ button{font:inherit;font-weight:700;border:0;border-radius:12px;padding:14px 18p
 .ig{font-weight:700;color:var(--accent);user-select:all}
 a{color:var(--accent)}
 .copied{color:var(--ok);font-size:14px;margin:0;min-height:1.4em}
+.guide{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.guide figure{margin:0;display:grid;gap:6px;min-width:0}
+.guide img{width:100%;height:auto;border-radius:10px;border:1px solid var(--line);display:block}
+.guide figcaption{font-size:14px;font-weight:700;text-align:center}
 footer{text-align:center;color:var(--muted);font-size:13px}
 @media (prefers-reduced-motion:no-preference){section{transition:opacity .2s}}
 </style>
@@ -186,11 +190,10 @@ footer{text-align:center;color:var(--muted);font-size:13px}
   <fieldset class="q" data-req data-group="springPeople"><legend class="req">每張畫面要放幾位？（人物＋寵物）</legend>
     <div class="opts">
       <label class="opt"><input type="radio" name="springPeople" id="sp-1" value="1 位（基本款）"><span>1 位・基本款</span></label>
-      <label class="opt"><input type="radio" name="springPeople" id="sp-2" value="2 位（+$20）"><span>2 位・+$20</span></label>
-      <label class="opt"><input type="radio" name="springPeople" id="sp-3" value="3 位（+$40）"><span>3 位・+$40</span></label>
-      <label class="opt"><input type="radio" name="springPeople" id="sp-4" value="4 位（+$60）"><span>4 位・+$60</span></label>
+      <label class="opt"><input type="radio" name="springPeople" id="sp-2" value="+1 位（$20）"><span>+1 位・$20</span></label>
+      <label class="opt"><input type="radio" name="springPeople" id="sp-3" value="+2 位（$40）"><span>+2 位・$40</span></label>
+      <label class="opt"><input type="radio" name="springPeople" id="sp-4" value="+3 位（$60）"><span>+3 位・$60</span></label>
     </div></fieldset>
-  <div class="q"><label for="springText">想放的吉祥話或文字</label><textarea id="springText" placeholder="例如：大吉大利、平安喜樂、全家人名字"></textarea></div>
 </section>
 
 <section id="s3F" data-for="手機桌布" hidden>
@@ -217,11 +220,12 @@ footer{text-align:center;color:var(--muted);font-size:13px}
 
 <section id="s5">
   <h2>參考照片</h2>
-  <p class="desc">📸 參考照片小提醒
-・臉部清楚、光線充足，不要有濾鏡或太遠
-・全身照最好，至少要有上半身
-・每位人物或寵物都需要照片，可以分開拍
-・照片只用於這次繪製，不會公開或作其他用途</p>
+  <p class="hint">傳照片前，請先對照下面兩張說明挑選，照片越清楚，成品越好看喔！</p>
+  <div class="guide">
+    <figure><img src="photo-good.jpg" width="900" height="1295" loading="lazy" alt="如何挑照片：1. 光線明亮清楚 2. 頭、臉清楚、無陰影 3. 臉部正面、無遮擋 4. 近拍人物"><figcaption>✓ 這樣的照片最適合</figcaption></figure>
+    <figure><img src="photo-ng.jpg" width="900" height="1295" loading="lazy" alt="NG 照片：1. 人物勿太小 2. 勿美肌、勿調色 3. 臉部勿遮擋、勿陰影 4. 勿使用小圖放大照片 5. 勿模糊晃動 6. 頭臉勿切割、不完整 7. 異物遮臉"><figcaption>✗ 這些照片請避免</figcaption></figure>
+  </div>
+  <p class="hint">每位人物或寵物都需要照片，可以分開拍。照片只用於這次製作，不會公開或作其他用途。</p>
   <fieldset class="q" data-req data-group="photo"><legend class="req">參考照片怎麼提供？</legend>
     <div class="opts">
       <label class="opt"><input type="radio" name="photo" id="photo-ig" value="填完後用 IG 私訊傳"><span>填完後用 IG 私訊傳</span></label>
@@ -364,7 +368,7 @@ footer{text-align:center;color:var(--muted);font-size:13px}
       if(!$('#q-stand').hidden)add('生日立牌款式',val('standStyle'));
       if(!$('#q-cake').hidden){add('生日蛋糕插旗款式',val('cakeStyle'));add('生日蛋糕插旗支數',v('cakeQty'));}
       if(!$('#q-snack').hidden){add('點心插旗生日帽款式',val('snackStyle'));add('點心插旗組數',v('snackQty'));}}
-    if(m==='紅包袋／春聯'){add('紅包袋',v('redQty'));add('春聯',v('coupletQty'));add('每張畫面',val('springPeople'));add('吉祥話／文字',v('springText'));}
+    if(m==='紅包袋／春聯'){add('紅包袋',v('redQty'));add('春聯',v('coupletQty'));add('每張畫面',val('springPeople'));}
     if(m==='手機桌布'){add('款式',v('wallStyle'));}
     if(!$('#s4').hidden){L.push('');add('取貨方式',val('pickup'));add('收件人',v('rcvName'));add('手機',v('rcvPhone'));add('取貨門市',v('rcvStore'));}
     L.push('');add('參考照片',val('photo'));add('作品分享',val('share'));add('從哪裡知道我',val('source'));add('其他',v('note'));
