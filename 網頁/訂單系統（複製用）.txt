@@ -178,24 +178,24 @@ function updateOrder(key, id, status, amount, note) {
 
 // ================= 前台網頁 =================
 var FORM_HTML = String.raw`<!doctype html><html><head><meta charset="utf-8">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Noto+Serif+TC:wght@500;600&family=Noto+Sans+TC:wght@300;400;500&display=swap">
 <style>
 :root{--bg:#f6efe7;--paper:#fffaf5;--ink:#3b2a22;--muted:#7d6a5e;--line:#e6d7c9;--accent:#c9566b;--accent-soft:#f7dfe2;--ok:#3f7d5a;--error:#b3261e;
---display:"LXGW WenKai TC","Kaiti TC","Noto Sans TC",serif;--body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif}
+--display:"Noto Serif TC","Songti TC","PMingLiU",serif;--latin:"Cormorant Garamond","Noto Serif TC",serif;--body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.7;padding:24px 16px 64px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-weight:400;font-size:15.5px;line-height:1.85;letter-spacing:.03em;padding:24px 16px 64px;-webkit-font-smoothing:antialiased}
 [hidden]{display:none!important}
 .wrap{max-width:640px;margin:0 auto;display:grid;gap:20px}
-.brand{font-family:var(--display);font-size:15px;letter-spacing:.12em;color:var(--accent)}
-h1{font-family:var(--display);font-size:clamp(28px,7vw,38px);line-height:1.25;margin:4px 0}
-.lead{color:var(--muted);margin:0}
+.brand{font-family:var(--latin);font-weight:600;font-size:17px;letter-spacing:.28em;color:var(--accent)}
+h1{font-family:var(--display);font-weight:600;font-size:clamp(26px,6.5vw,34px);letter-spacing:.12em;line-height:1.4;margin:6px 0 8px}
+.lead{color:var(--muted);font-weight:300;margin:0}
 .notice{background:var(--accent-soft);border-radius:10px;padding:12px 14px;font-size:14px;margin:8px 0 0}
 section{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:20px 18px;display:grid;gap:18px}
-section h2{font-family:var(--display);font-size:22px;margin:0}
-section h2 small{font-family:var(--body);font-size:12px;color:var(--muted);font-weight:500;margin-left:8px}
-.desc{white-space:pre-line;font-size:14px;color:var(--muted);background:var(--bg);border-radius:10px;padding:10px 12px;margin:0}
+section h2{font-family:var(--display);font-weight:600;font-size:19px;letter-spacing:.1em;margin:0;padding-bottom:10px;border-bottom:1px solid var(--line)}
+section h2 small{font-family:var(--body);font-size:12px;color:var(--muted);font-weight:400;letter-spacing:.05em;margin-left:10px}
+.desc{white-space:pre-line;font-size:13.5px;font-weight:300;color:var(--muted);background:var(--bg);border-radius:10px;padding:10px 12px;margin:0}
 .q{display:grid;gap:8px;border:0;margin:0;padding:0;min-width:0}
-.q>label:first-child,.q legend{font-weight:700;font-size:15px;padding:0}
+.q>label:first-child,.q legend{font-weight:500;font-size:15px;letter-spacing:.05em;padding:0}
 .req::after{content:" *";color:var(--accent)}
 .hint{font-size:13px;color:var(--muted);margin:0}
 input[type=text],input[type=tel],input[type=number],textarea,select{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
@@ -203,20 +203,20 @@ textarea{min-height:84px}
 .opts{display:flex;flex-wrap:wrap;gap:8px}
 .opt{position:relative}
 .opt input{position:absolute;opacity:0;inset:0;margin:0}
-.opt span{display:inline-block;border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:6px 14px;font-size:15px;cursor:pointer}
+.opt span{display:inline-block;border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:6px 15px;font-size:14px;letter-spacing:.04em;cursor:pointer}
 .opt input:checked+span{background:var(--accent);border-color:var(--accent);color:#fff}
 .opt input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px}
 .err{color:var(--error);font-size:13px;margin:0}
 .q.invalid input,.q.invalid select{border-color:var(--error)}
-button{font:inherit;font-weight:700;border:0;border-radius:12px;padding:14px 18px;cursor:pointer;background:var(--accent);color:#fff;font-size:17px;width:100%}
+button{font:inherit;font-weight:500;letter-spacing:.2em;border:0;border-radius:12px;padding:15px 18px;cursor:pointer;background:var(--accent);color:#fff;font-size:16px;width:100%}
 button:disabled{opacity:.6}
 .guide{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
 .guide img{width:100%;border-radius:10px;border:1px solid var(--line)}
 .done{text-align:center}
-.done .big{font-family:var(--display);font-size:30px;margin:0}
+.done .big{font-family:var(--display);font-weight:600;font-size:26px;letter-spacing:.1em;margin:0}
 a{color:var(--accent)}
 .hp{position:absolute;left:-9999px}
-footer{text-align:center;color:var(--muted);font-size:13px}
+footer{text-align:center;color:var(--muted);font-family:var(--latin);font-size:14px;letter-spacing:.15em}
 </style></head><body>
 <div class="wrap">
 <header>
