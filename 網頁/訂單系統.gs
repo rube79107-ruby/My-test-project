@@ -22,8 +22,64 @@ var STATUSES = ['新需求', '已聯絡', '已報價', '已匯款', '製作中',
 var PAID = ['已匯款', '製作中', '已寄出', '已完成'];
 var HEADERS = ['訂單編號', '建立時間', '月份', '狀態', '報價金額', '稱呼', 'IG', '聯絡方式', 'LINE／Email',
   '主要商品', '商品細節', '取貨方式', '收件人', '手機', '取貨門市', '參考照片', '作品分享', '從哪裡知道', '其他', '備註',
-  '照片資料夾', '照片數', '狀態紀錄'];
+  '照片資料夾', '照片數', '狀態紀錄', '成本'];
 var LOG_COL = 23;
+var COST_COL = 24;
+
+// ---------- 成本設定（改這裡就好）----------
+var COSTS = {
+  '紅包袋（個）': 11,        // 1 款 3 個 → 33
+  '春聯（張）': 14,          // 1 款 2 張 → 28
+  '無框畫': 170,
+  '鑰匙圈': 299,
+  '手機桌布': 0,
+  '無臉畫圖檔': 0,
+  '生日立牌': 600,
+  '生日蛋糕插旗（支）': 30,
+  '點心插旗（組）': 30,
+  '包材（每筆實體訂單）': 50,
+  '超商運費': 60,           // 報價金額有含運費時，要扣掉付給超商的運費
+  '宅配運費': 80
+};
+
+// 依客人填的內容估算成本（後台可以手動改）
+function estimateCost(o) {
+  var lines = [], total = 0;
+  var add = function (label, n, unit) { if (n > 0) { var c = n * unit; total += c; lines.push(label + ' $' + c); } };
+  var num = function (t) { var m = /(\d+)/.exec(String(t || '')); return m ? Number(m[1]) : 0; };
+  var blocks = {}, cur = '';
+  String(o['商品細節'] || '').split('\n').forEach(function (l) {
+    var h = /^【(.+)】$/.exec(l);
+    if (h) { cur = h[1]; blocks[cur] = {}; return; }
+    var kv = /^(.+?)：(.*)$/.exec(l);
+    if (kv && cur) blocks[cur][kv[1]] = kv[2];
+  });
+  var b;
+  if ((b = blocks['無臉畫圖檔'])) {
+    var addon = b['加購'] || '';
+    if (addon.indexOf('無框畫') >= 0) add('無框畫 ×1', 1, COSTS['無框畫']);
+    if (addon.indexOf('鑰匙圈') >= 0) add('鑰匙圈 ×1', 1, COSTS['鑰匙圈']);
+  }
+  if (blocks['無框畫']) add('無框畫 ×1', 1, COSTS['無框畫']);
+  if ((b = blocks['鑰匙圈'])) { var kq = num(b['數量']) || 1; add('鑰匙圈 ×' + kq, kq, COSTS['鑰匙圈']); }
+  var hasStand = false;
+  if ((b = blocks['生日立牌／插旗'])) {
+    var items = b['品項'] || '';
+    if (items.indexOf('生日立牌') >= 0) { hasStand = true; add('生日立牌 ×1', 1, COSTS['生日立牌']); }
+    if (items.indexOf('生日蛋糕插旗') >= 0) { var cq = num(b['蛋糕插旗支數']); add('蛋糕插旗 ×' + cq, cq, COSTS['生日蛋糕插旗（支）']); }
+    if (items.indexOf('點心插旗') >= 0) { var sq = num(b['點心插旗組數']); add('點心插旗 ×' + sq, sq, COSTS['點心插旗（組）']); }
+  }
+  if ((b = blocks['紅包袋／春聯'])) {
+    var rq = num(b['紅包袋']), re = num(b['紅包袋加印']), cq2 = num(b['春聯']), ce = num(b['春聯加印']);
+    add('紅包袋 ' + rq + ' 款（' + (rq * 3 + re) + ' 個）', rq * 3 + re, COSTS['紅包袋（個）']);
+    add('春聯 ' + cq2 + ' 款（' + (cq2 * 2 + ce) + ' 張）', cq2 * 2 + ce, COSTS['春聯（張）']);
+  }
+  if (o['取貨方式'] || hasStand) {
+    add('包材', 1, COSTS['包材（每筆實體訂單）']);
+    add(hasStand ? '宅配運費' : '超商運費', 1, hasStand ? COSTS['宅配運費'] : COSTS['超商運費']);
+  }
+  return { total: total, lines: lines };
+}
 var MAX_PHOTOS = 10;
 
 // ---------- 第一次設定 ----------
@@ -177,6 +233,12 @@ function readOrders() {
     o['月份'] = String(r[2]);
     o['報價金額'] = Number(r[4]) || 0;
     o['狀態紀錄'] = parseLog(r[22]);
+    var est = estimateCost(o);
+    o['成本估算'] = est.total;
+    o['成本明細'] = est.lines.join('、');
+    o['成本'] = (r[23] === '' || r[23] == null) ? '' : Number(r[23]) || 0;
+    o['使用成本'] = o['成本'] === '' ? est.total : o['成本'];
+    o['淨利'] = o['報價金額'] ? o['報價金額'] - o['使用成本'] : null;
     if (!o['狀態紀錄']['新需求']) o['狀態紀錄']['新需求'] = o['建立時間'];
     return o;
   });
@@ -196,6 +258,7 @@ function getDashboard(key, month) {
   var list = all.filter(function (o) { return o['月份'] === month; });
   var paid = list.filter(function (o) { return PAID.indexOf(o['狀態']) >= 0; });
   var sum = function (a) { return a.reduce(function (t, o) { return t + o['報價金額']; }, 0); };
+  var sumNet = function (a) { return a.reduce(function (t, o) { return t + (o['淨利'] || 0); }, 0); };
   var group = function (arr, field) {
     var m = {};
     arr.forEach(function (o) {
@@ -214,14 +277,15 @@ function getDashboard(key, month) {
   var trend = monthList.slice(0, 6).map(function (m) {
     var l = all.filter(function (o) { return o['月份'] === m; });
     var p = l.filter(function (o) { return PAID.indexOf(o['狀態']) >= 0; });
-    return { month: m, count: l.length, paid: p.length, revenue: sum(p) };
+    return { month: m, count: l.length, paid: p.length, revenue: sum(p), net: sumNet(p) };
   }).reverse();
 
   var todo = all.filter(function (o) { return ['新需求', '已聯絡', '已報價', '已匯款', '製作中'].indexOf(o['狀態']) >= 0; });
 
   return {
     month: month, months: monthList, statuses: STATUSES,
-    total: list.length, paidCount: paid.length, revenue: sum(paid),
+    total: list.length, paidCount: paid.length, revenue: sum(paid), net: sumNet(paid),
+    margin: sum(paid) ? Math.round(sumNet(paid) / sum(paid) * 100) : 0,
     conversion: list.length ? Math.round(paid.length / list.length * 100) : 0,
     statusCount: statusCount, byProduct: group(list, '主要商品'), bySource: group(list, '從哪裡知道'),
     trend: trend, todoCount: todo.length,
@@ -229,7 +293,7 @@ function getDashboard(key, month) {
   };
 }
 
-function updateOrder(key, id, status, amount, note) {
+function updateOrder(key, id, status, amount, note, cost) {
   checkKey(key);
   if (STATUSES.indexOf(status) < 0) throw new Error('狀態不正確');
   var sh = sheet();
@@ -246,6 +310,7 @@ function updateOrder(key, id, status, amount, note) {
       sh.getRange(r, 4).setValue(status);
       sh.getRange(r, 5).setValue(amount === '' || amount == null ? '' : Number(amount) || 0);
       sh.getRange(r, 20).setValue(String(note || '').slice(0, 1000));
+      sh.getRange(r, COST_COL).setValue(cost === '' || cost == null ? '' : Number(cost) || 0);
       return { ok: true };
     }
   }
@@ -630,6 +695,10 @@ pre{white-space:pre-wrap;margin:0;font-family:var(--body);font-size:14px;backgro
 button{font:inherit;font-weight:700;border:0;border-radius:8px;padding:7px 14px;background:var(--accent);color:#fff;cursor:pointer}
 .saved{color:var(--ok);font-size:13px}
 .order a{color:var(--accent);font-weight:500}
+.profit{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:14px;font-variant-numeric:tabular-nums}
+.profit .net{font-weight:700;color:var(--ok)}
+.profit .net.neg{color:#b3261e}
+.edit input.cost{width:200px}
 .tl{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));margin:6px 0 2px;text-align:center}
 .tl .step{position:relative;display:grid;gap:4px;justify-items:center;font-size:12px;color:var(--muted)}
 .tl .step::before{content:"";position:absolute;top:7px;left:-50%;width:100%;height:3px;background:var(--line)}
@@ -654,6 +723,7 @@ button{font:inherit;font-weight:700;border:0;border-radius:8px;padding:7px 14px;
     <div class="card"><div class="k">本月需求數</div><div class="v" id="c-total">0</div></div>
     <div class="card"><div class="k">成交（已匯款以後）</div><div class="v" id="c-paid">0</div></div>
     <div class="card"><div class="k">本月營收</div><div class="v" id="c-rev">0</div></div>
+    <div class="card"><div class="k">本月淨利</div><div class="v" id="c-net">0</div><div class="k" id="c-margin"></div></div>
     <div class="card"><div class="k">成交率</div><div class="v" id="c-conv">0%</div></div>
     <div class="card"><div class="k">待處理（全部月份）</div><div class="v" id="c-todo">0</div></div>
   </div>
@@ -702,11 +772,12 @@ function render(d){
   DATA=d;$('#loading').hidden=true;$('#app').hidden=false;
   var sel=$('#month');sel.innerHTML='';d.months.forEach(function(m){var o=el('option','',m);o.value=m;if(m===d.month)o.selected=true;sel.appendChild(o)});
   $('#c-total').textContent=d.total;$('#c-paid').textContent=d.paidCount;$('#c-rev').textContent=money(d.revenue);
+  $('#c-net').textContent=money(d.net);$('#c-margin').textContent='淨利率 '+d.margin+'%';
   $('#c-conv').textContent=d.conversion+'%';$('#c-todo').textContent=d.todoCount;
   table($('#t-product'),['商品','需求','成交'],d.byProduct.map(function(p){return [p.name,p.count,p.paid]}));
   table($('#t-source'),['來源','需求','成交'],d.bySource.map(function(p){return [p.name,p.count,p.paid]}));
   var max=Math.max.apply(null,d.trend.map(function(t){return t.revenue}).concat([1]));
-  table($('#t-trend'),['月份','需求','成交','營收',''],d.trend.map(function(t){var b=el('span','bar');b.style.width=Math.round(t.revenue/max*120)+'px';return [t.month,t.count,t.paid,money(t.revenue),b]}));
+  table($('#t-trend'),['月份','需求','成交','營收','淨利',''],d.trend.map(function(t){var b=el('span','bar');b.style.width=Math.round(t.revenue/max*120)+'px';return [t.month,t.count,t.paid,money(t.revenue),money(t.net),b]}));
   var f=$('#filters');f.innerHTML='';['全部'].concat(d.statuses).forEach(function(s){
     var n=s==='全部'?d.total:(d.statusCount[s]||0);var c=el('button','chip'+(s===FILTER?' on':''),s+' '+n);c.type='button';
     c.onclick=function(){FILTER=s;render(DATA)};f.appendChild(c)});
@@ -726,14 +797,21 @@ function render(d){
     card.appendChild(el('pre','',info.join('\n')));
     var fu=String(o['照片資料夾']||'');
     if(fu.indexOf('https://drive.google.com/')===0){var pa=el('a','','📸 查看客人照片（'+(o['照片數']||0)+' 張）');pa.href=fu;pa.target='_blank';pa.rel='noopener';card.appendChild(pa)}
+    var pf=el('div','profit');
+    pf.appendChild(el('span','','報價 '+(o['報價金額']?money(o['報價金額']):'—')));
+    pf.appendChild(el('span','','成本 '+money(o['使用成本'])+(o['成本']===''?'（估算）':'（手動）')));
+    var nv=el('span','net'+(o['淨利']!=null&&o['淨利']<0?' neg':''),'淨利 '+(o['淨利']==null?'—':money(o['淨利'])));pf.appendChild(nv);
+    card.appendChild(pf);
+    if(o['成本明細'])card.appendChild(el('div','meta','成本估算：'+o['成本明細']));
     var ed=el('div','edit');var s=el('select');d.statuses.forEach(function(x){var op=el('option','',x);if(x===o['狀態'])op.selected=true;s.appendChild(op)});
     var a=el('input');a.type='number';a.placeholder='報價金額';a.value=o['報價金額']||'';
+    var cs=el('input');cs.type='number';cs.placeholder='成本（空白＝估算 $'+o['成本估算']+'）';cs.value=o['成本']===''?'':o['成本'];cs.className='cost';
     var nt=el('input');nt.type='text';nt.placeholder='備註';nt.value=o['備註']||'';
     var b=el('button','', '儲存');b.type='button';var ok=el('span','saved','');
     b.onclick=function(){b.disabled=true;ok.textContent='儲存中⋯';
       google.script.run.withSuccessHandler(function(){ok.textContent='✓ 已儲存';b.disabled=false;load(DATA.month)})
-        .withFailureHandler(function(e){ok.textContent='儲存失敗：'+e.message;b.disabled=false}).updateOrder(KEY,o['訂單編號'],s.value,a.value,nt.value)};
-    ed.appendChild(s);ed.appendChild(a);ed.appendChild(nt);ed.appendChild(b);ed.appendChild(ok);card.appendChild(ed);
+        .withFailureHandler(function(e){ok.textContent='儲存失敗：'+e.message;b.disabled=false}).updateOrder(KEY,o['訂單編號'],s.value,a.value,nt.value,cs.value)};
+    ed.appendChild(s);ed.appendChild(a);ed.appendChild(cs);ed.appendChild(nt);ed.appendChild(b);ed.appendChild(ok);card.appendChild(ed);
     box.appendChild(card);
   });
 }
