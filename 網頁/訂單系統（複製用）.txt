@@ -370,8 +370,12 @@ footer{text-align:center;color:var(--muted);font-family:var(--latin);font-size:1
 ・春聯：1 款 2 張 150 元
 ・基本款每張畫面 1 位，加 1 位人物或寵物 +20 元，最多 4 位
 ・同款加印一張 +40 元</p>
-  <div class="q" data-req><label class="req" for="redQty">紅包袋訂購數量</label><select id="redQty"><option value="">請選擇</option><option>不需要</option><option>1 款</option><option>2 款</option><option>3 款</option><option>4 款</option><option>5 款</option></select></div>
-  <div class="q" data-req><label class="req" for="coupletQty">春聯訂購數量</label><select id="coupletQty"><option value="">請選擇</option><option>不需要</option><option>1 款</option><option>2 款</option><option>3 款</option><option>4 款</option><option>5 款</option></select></div>
+  <div class="q" data-req><label class="req" for="redQty">紅包袋訂購數量</label><select id="redQty"><option value="">請選擇</option><option>不需要</option><option>1 款</option><option>2 款</option><option>3 款</option><option>4 款</option><option>5 款</option></select><p class="hint">1 款 3 個</p></div>
+  <fieldset class="q" id="q-redStyle" data-req data-count="redQty" data-group="redStyle" hidden><legend class="req">紅包袋款式</legend><div class="opts" data-opts="A 羊羊得意|B 新年快樂|C 吉祥如意|D 發羊光大|E 大吉大利" data-type="checkbox"></div><p class="hint">訂幾款就選幾款</p></fieldset>
+  <div class="q" id="q-redExtra" hidden><label for="redExtra">紅包袋加印張數</label><select id="redExtra"><option>不需要</option><option>1 張</option><option>2 張</option><option>3 張</option><option>4 張</option><option>5 張</option><option>6 張</option><option>7 張</option><option>8 張</option><option>9 張</option><option>10 張</option></select><p class="hint">同款加印一張 +$40</p></div>
+  <div class="q" data-req><label class="req" for="coupletQty">春聯訂購數量</label><select id="coupletQty"><option value="">請選擇</option><option>不需要</option><option>1 款</option><option>2 款</option><option>3 款</option><option>4 款</option><option>5 款</option></select><p class="hint">1 款 2 張</p></div>
+  <fieldset class="q" id="q-coupletStyle" data-req data-count="coupletQty" data-group="coupletStyle" hidden><legend class="req">春聯款式</legend><div class="opts" data-opts="A So young so happy|B 神采飛羊|C 永遠都很 young|D Young 氣十足|E 大吉大利" data-type="checkbox"></div><p class="hint">訂幾款就選幾款</p></fieldset>
+  <div class="q" id="q-coupletExtra" hidden><label for="coupletExtra">春聯加印張數</label><select id="coupletExtra"><option>不需要</option><option>1 張</option><option>2 張</option><option>3 張</option><option>4 張</option><option>5 張</option><option>6 張</option><option>7 張</option><option>8 張</option><option>9 張</option><option>10 張</option></select><p class="hint">同款加印一張 +$40</p></div>
   <fieldset class="q" data-req data-group="springPeople"><legend class="req">每張畫面要放幾位？（人物＋寵物）</legend><div class="opts" data-opts="1 位（基本款）|+1 位（$20）|+2 位（$40）|+3 位（$60）" data-type="radio"></div></fieldset>
 </section>
 
@@ -402,7 +406,7 @@ footer{text-align:center;color:var(--muted);font-family:var(--latin);font-size:1
     <div><b>✓ 選照片原則</b><ol><li>光線明亮清楚</li><li>頭、臉清楚、無陰影</li><li>臉部正面、無遮擋</li><li>近拍人物</li></ol></div>
     <div><b>✗ 請避免</b><ol><li>人物太小</li><li>美肌、調色</li><li>臉部遮擋、陰影</li><li>小圖放大</li><li>模糊晃動</li><li>頭臉被切到、不完整</li><li>異物遮臉</li></ol></div>
   </div>
-  <fieldset class="q" id="q-photo" data-req data-group="photo"><legend class="req">參考照片怎麼提供？</legend><div class="opts" data-opts="直接在這裡上傳|送出後用 IG 私訊傳|用 LINE 傳|還沒準備好" data-type="radio"></div></fieldset>
+  <fieldset class="q" id="q-photo" data-req data-group="photo"><legend class="req">參考照片怎麼提供？</legend><div class="opts" data-opts="直接在這裡上傳|送出後用 IG 私訊傳|用 LINE 傳|還沒準備好|無需提供" data-type="radio"></div></fieldset>
   <div class="q" id="q-upload" data-upload hidden>
     <label class="req" for="photos">上傳照片</label>
     <p class="hint" id="springNeed" hidden>紅包袋、春聯需要上傳照片，每位人物或寵物各一張</p>
@@ -469,6 +473,9 @@ footer{text-align:center;color:var(--muted);font-family:var(--latin);font-size:1
     hide('#q-stand',t.indexOf('生日立牌')<0);
     hide('#q-cake',t.indexOf('生日蛋糕插旗')<0);hide('#q-cakeQty',t.indexOf('生日蛋糕插旗')<0);
     hide('#q-snack',t.indexOf('點心插旗')<0);hide('#q-snackQty',t.indexOf('點心插旗')<0);
+    var rq=v('redQty'),cq=v('coupletQty');
+    hide('#q-redStyle',!rq||rq==='不需要');hide('#q-redExtra',!rq||rq==='不需要');
+    hide('#q-coupletStyle',!cq||cq==='不需要');hide('#q-coupletExtra',!cq||cq==='不需要');
     hide('#s-ship',!needsShip());
     var sp=springNeedsPhoto();
     hide('#q-photo',sp);hide('#springNeed',!sp);
@@ -485,7 +492,8 @@ footer{text-align:center;color:var(--muted);font-family:var(--latin);font-size:1
       if(!q.hasAttribute('data-req'))return;
       var g=q.getAttribute('data-group'),msg='';
       if(g){var n=vals(g).length,all=$$('input[name="'+g+'"]').length;
-        if(q.hasAttribute('data-all')?n<all:n===0)msg=q.hasAttribute('data-all')?'請勾選全部項目':'請選擇一項';}
+        if(q.hasAttribute('data-all')?n<all:n===0)msg=q.hasAttribute('data-all')?'請勾選全部項目':'請選擇一項';
+        else if(q.hasAttribute('data-count')){var need=parseInt(v(q.getAttribute('data-count')),10)||0;if(need&&n!==need)msg='訂購 '+need+' 款，請選 '+need+' 種款式（目前選了 '+n+' 種）';}}
       else{var inp=q.querySelector('input,select,textarea'),x=(inp.value||'').trim();
         if(!x)msg='這題必填';
         else if(q.hasAttribute('data-phone')&&!/^09[0-9]{8}$/.test(x.replace(/[ -]/g,'')))msg='請填 09 開頭的 10 碼手機號碼';
@@ -509,7 +517,12 @@ footer{text-align:center;color:var(--muted);font-family:var(--latin);font-size:1
         if(t.indexOf('生日立牌')>=0)add('立牌款式',val('standStyle'));
         if(t.indexOf('生日蛋糕插旗')>=0){add('蛋糕插旗款式',val('cakeStyle'));add('蛋糕插旗支數',v('cakeQty'))}
         if(t.indexOf('點心插旗')>=0){add('點心插旗款式',val('snackStyle'));add('點心插旗組數',v('snackQty'))}}
-      if(m==='紅包袋／春聯'){add('紅包袋',v('redQty'));add('春聯',v('coupletQty'));add('每張畫面',val('springPeople'))}
+      if(m==='紅包袋／春聯'){
+        add('紅包袋',v('redQty'));
+        if(v('redQty')&&v('redQty')!=='不需要'){add('紅包袋款式',vals('redStyle'));add('紅包袋加印',v('redExtra'))}
+        add('春聯',v('coupletQty'));
+        if(v('coupletQty')&&v('coupletQty')!=='不需要'){add('春聯款式',vals('coupletStyle'));add('春聯加印',v('coupletExtra'))}
+        add('每張畫面',val('springPeople'))}
       if(m==='手機桌布'){add('款式',v('wallStyle'))}
     });
     return L;
