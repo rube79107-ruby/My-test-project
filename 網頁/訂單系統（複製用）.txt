@@ -22,7 +22,8 @@ var STATUSES = ['新需求', '已聯絡', '已報價', '已匯款', '製作中',
 var PAID = ['已匯款', '製作中', '已寄出', '已完成'];
 var HEADERS = ['訂單編號', '建立時間', '月份', '狀態', '報價金額', '稱呼', 'IG', '聯絡方式', 'LINE／Email',
   '主要商品', '商品細節', '取貨方式', '收件人', '手機', '取貨門市', '參考照片', '作品分享', '從哪裡知道', '其他', '備註',
-  '照片資料夾', '照片數'];
+  '照片資料夾', '照片數', '狀態紀錄'];
+var LOG_COL = 23;
 var MAX_PHOTOS = 10;
 
 // ---------- 第一次設定 ----------
@@ -75,6 +76,19 @@ function showLinks() {
 
 function getProp(k) { return PropertiesService.getScriptProperties().getProperty(k); }
 function sheet() { return SpreadsheetApp.openById(getProp('SHEET_ID')).getSheetByName('訂單'); }
+function ensureHeaders() {
+  var sh = sheet();
+  var cur = sh.getRange(1, 1, 1, HEADERS.length).getValues()[0];
+  for (var i = 0; i < HEADERS.length; i++) {
+    if (cur[i] !== HEADERS[i]) {
+      sh.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]).setFontWeight('bold').setBackground('#f3e6d8');
+      return;
+    }
+  }
+}
+function nowText() { return Utilities.formatDate(new Date(), 'Asia/Taipei', 'yyyy-MM-dd HH:mm'); }
+function parseLog(v) { try { var o = JSON.parse(v); return o && typeof o === 'object' ? o : {}; } catch (e) { return {}; } }
+
 function checkKey(key) { if (!key || key !== getProp('ADMIN_KEY')) throw new Error('沒有權限'); }
 
 // ---------- 網頁 ----------
@@ -109,7 +123,8 @@ function submitOrder(d) {
     if (photoCount > 0) folderUrl = photoRoot().createFolder(id + ' ' + s(d.name, 30)).getUrl();
     sh.appendRow([id, now, "'" + month, '新需求', '', s(d.name, 50), s(d.ig, 60), s(d.contact, 20), s(d.lineEmail, 100),
       s(d.main, 200), s(d.details, 3000), s(d.pickup, 20), s(d.rcvName, 50), "'" + s(d.rcvPhone, 20), s(d.rcvStore, 100),
-      s(d.photo, 50), s(d.share, 50), s(d.source, 30), s(d.note, 1000), '', folderUrl, 0]);
+      s(d.photo, 50), s(d.share, 50), s(d.source, 30), s(d.note, 1000), '', folderUrl, 0,
+      JSON.stringify({ '新需求': Utilities.formatDate(now, 'Asia/Taipei', 'yyyy-MM-dd HH:mm') })]);
   } finally {
     lock.releaseLock();
   }
@@ -161,12 +176,15 @@ function readOrders() {
     o['建立時間'] = r[1] instanceof Date ? Utilities.formatDate(r[1], 'Asia/Taipei', 'yyyy-MM-dd HH:mm') : String(r[1]);
     o['月份'] = String(r[2]);
     o['報價金額'] = Number(r[4]) || 0;
+    o['狀態紀錄'] = parseLog(r[22]);
+    if (!o['狀態紀錄']['新需求']) o['狀態紀錄']['新需求'] = o['建立時間'];
     return o;
   });
 }
 
 function getDashboard(key, month) {
   checkKey(key);
+  ensureHeaders();
   var all = readOrders();
   var months = {};
   all.forEach(function (o) { months[o['月份']] = true; });
@@ -219,6 +237,12 @@ function updateOrder(key, id, status, amount, note) {
   for (var i = 0; i < ids.length; i++) {
     if (ids[i][0] === id) {
       var r = i + 2;
+      var old = sh.getRange(r, 4).getValue();
+      if (old !== status) {
+        var log = parseLog(sh.getRange(r, LOG_COL).getValue());
+        log[status] = nowText();
+        sh.getRange(r, LOG_COL).setValue(JSON.stringify(log));
+      }
       sh.getRange(r, 4).setValue(status);
       sh.getRange(r, 5).setValue(amount === '' || amount == null ? '' : Number(amount) || 0);
       sh.getRange(r, 20).setValue(String(note || '').slice(0, 1000));
@@ -578,7 +602,7 @@ th{font-size:13px;color:var(--muted);font-weight:500}
 td.n,th.n{text-align:right}
 .bar{height:8px;border-radius:4px;background:var(--accent);display:block;min-width:2px}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
-.chip{border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:13px;background:var(--paper);cursor:pointer}
+.chip{border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:13px;font-weight:500;background:var(--paper);color:var(--ink);cursor:pointer}
 .chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
 .order{border:1px solid var(--line);border-radius:12px;background:var(--paper);padding:14px;display:grid;gap:8px}
 .order .top{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:baseline}
@@ -593,6 +617,18 @@ pre{white-space:pre-wrap;margin:0;font-family:var(--body);font-size:14px;backgro
 button{font:inherit;font-weight:700;border:0;border-radius:8px;padding:7px 14px;background:var(--accent);color:#fff;cursor:pointer}
 .saved{color:var(--ok);font-size:13px}
 .order a{color:var(--accent);font-weight:500}
+.tl{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));margin:6px 0 2px;text-align:center}
+.tl .step{position:relative;display:grid;gap:4px;justify-items:center;font-size:12px;color:var(--muted)}
+.tl .step::before{content:"";position:absolute;top:7px;left:-50%;width:100%;height:3px;background:var(--line)}
+.tl .step:first-child::before{display:none}
+.tl .dot{position:relative;width:16px;height:16px;border-radius:50%;background:var(--paper);border:3px solid var(--line);z-index:1}
+.tl .step.done{color:var(--ink)}
+.tl .step.done .dot{background:#4a7fd6;border-color:#4a7fd6}
+.tl .step.done::before{background:#4a7fd6}
+.tl .step.now{font-weight:700}
+.tl .step.now .dot{box-shadow:0 0 0 4px rgba(74,127,214,.2)}
+.tl .t{font-size:11px;line-height:1.35;font-variant-numeric:tabular-nums;white-space:pre-line}
+.lost{font-size:13px;color:#b3261e;background:#fbe4e2;border-radius:8px;padding:6px 10px}
 .empty{color:var(--muted);text-align:center;padding:24px}
 #loading{color:var(--muted)}
 </style></head><body>
@@ -621,6 +657,22 @@ button{font:inherit;font-weight:700;border:0;border-radius:8px;padding:7px 14px;
 </div>
 <script>
 var KEY='__KEY__', DATA=null, FILTER='全部', PAID=['已匯款','製作中','已寄出','已完成'];
+var STEPS=[['新需求','收到需求'],['已報價','已報價'],['已匯款','已匯款'],['製作中','製作中'],['已寄出','已寄出'],['已完成','已完成']];
+var ORDER=['新需求','已聯絡','已報價','已匯款','製作中','已寄出','已完成'];
+function shortTime(t){var m=/^\d{4}-(\d{2})-(\d{2}) (\d{2}:\d{2})/.exec(String(t||''));return m?m[1]+'/'+m[2]+'\n'+m[3]:''}
+function timeline(o){
+  var log=o['狀態紀錄']||{}, cur=o['狀態'];
+  if(cur==='未成交'){var w=el('div');w.appendChild(el('div','lost','✕ 未成交'+(log['未成交']?'　'+shortTime(log['未成交']).replace('\n',' '):'')));return w}
+  var ci=ORDER.indexOf(cur), box=el('div','tl');
+  STEPS.forEach(function(st){
+    var si=ORDER.indexOf(st[0]), done=ci>=si, now=(cur===st[0])||(cur==='已聯絡'&&st[0]==='新需求');
+    var d=el('div','step'+(done?' done':'')+(now?' now':''));
+    d.appendChild(el('span','dot'));d.appendChild(el('span','',st[1]));
+    d.appendChild(el('span','t',done?shortTime(log[st[0]]):''));
+    box.appendChild(d);
+  });
+  return box;
+}
 function $(s){return document.querySelector(s)}
 function el(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e}
 function money(n){return '$'+Number(n||0).toLocaleString()}
@@ -652,6 +704,7 @@ function render(d){
     var card=el('div','order');var top=el('div','top');
     var left=el('div');left.appendChild(el('span','who',o['稱呼']+'　'));left.appendChild(el('span','meta',o['IG']));
     top.appendChild(left);top.appendChild(el('span','st'+(PAID.indexOf(o['狀態'])>=0?' paid':''),o['狀態']));card.appendChild(top);
+    card.appendChild(timeline(o));
     card.appendChild(el('div','meta',o['訂單編號']+'・'+o['建立時間']+'・'+o['主要商品']+'・聯絡：'+o['聯絡方式']+(o['LINE／Email']?'（'+o['LINE／Email']+'）':'')));
     var info=[o['商品細節']];
     if(o['取貨方式'])info.push('取貨：'+o['取貨方式']+'｜'+o['收件人']+'｜'+o['手機']+'｜'+o['取貨門市']);
